@@ -8,23 +8,26 @@
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { background: #1a1a2e; color: #e0e0e0; font-family: 'Consolas', 'Courier New', monospace; }
     </style>
-    <script type="module" crossorigin src="/cnc-pipe-sim/assets/index-Cz3ZF2ju.js"></script>
+    <script type="module" crossorigin src="/cnc-pipe-sim/assets/index.js"></script>
   </head>
   <body>
     <div id="root"></div>
     <script>
-      window.onerror = function(msg, src, line, col, err) {
+      function showErr(msg) {
         document.getElementById('root').innerHTML =
-          '<pre style="color:#ff6666;padding:32px;white-space:pre-wrap">' +
-          'JS Error: ' + msg + '\nSource: ' + src + ':' + line + '\n\n' + (err && err.stack || '') +
-          '</pre>';
+          '<pre style="color:#ff6666;padding:32px;white-space:pre-wrap;font-size:14px">' + msg + '</pre>';
+      }
+      window.onerror = function(msg, src, line, col, err) {
+        showErr('JS Error: ' + msg + '\n' + src + ':' + line + '\n\n' + (err && err.stack || ''));
       };
       window.addEventListener('unhandledrejection', function(e) {
-        document.getElementById('root').innerHTML =
-          '<pre style="color:#ff6666;padding:32px;white-space:pre-wrap">' +
-          'Unhandled Promise: ' + (e.reason && e.reason.stack || e.reason) +
-          '</pre>';
+        showErr('Promise Error: ' + (e.reason && e.reason.stack || e.reason));
       });
+      // Catch script load failure (network / 404 errors don't fire window.onerror)
+      window._scriptLoaded = false;
+      setTimeout(function() {
+        if (!window._scriptLoaded) showErr('Script failed to load — possible 404 or network error.\nExpected: /cnc-pipe-sim/assets/index.js');
+      }, 6000);
     </script>
   </body>
 </html>
