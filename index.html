@@ -12,22 +12,5 @@
   </head>
   <body>
     <div id="root"></div>
-    <script>
-      function showErr(msg) {
-        document.getElementById('root').innerHTML =
-          '<pre style="color:#ff6666;padding:32px;white-space:pre-wrap;font-size:14px">' + msg + '</pre>';
-      }
-      window.onerror = function(msg, src, line, col, err) {
-        showErr('JS Error: ' + msg + '\n' + src + ':' + line + '\n\n' + (err && err.stack || ''));
-      };
-      window.addEventListener('unhandledrejection', function(e) {
-        showErr('Promise Error: ' + (e.reason && e.reason.stack || e.reason));
-      });
-      // Catch script load failure (network / 404 errors don't fire window.onerror)
-      window._scriptLoaded = false;
-      setTimeout(function() {
-        if (!window._scriptLoaded) showErr('Script failed to load — possible 404 or network error.\nExpected: /cnc-pipe-sim/assets/index.js');
-      }, 6000);
-    </script>
   </body>
 </html>
