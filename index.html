@@ -12,5 +12,19 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      window.onerror = function(msg, src, line, col, err) {
+        document.getElementById('root').innerHTML =
+          '<pre style="color:#ff6666;padding:32px;white-space:pre-wrap">' +
+          'JS Error: ' + msg + '\nSource: ' + src + ':' + line + '\n\n' + (err && err.stack || '') +
+          '</pre>';
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        document.getElementById('root').innerHTML =
+          '<pre style="color:#ff6666;padding:32px;white-space:pre-wrap">' +
+          'Unhandled Promise: ' + (e.reason && e.reason.stack || e.reason) +
+          '</pre>';
+      });
+    </script>
   </body>
 </html>
