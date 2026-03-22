@@ -1,4 +1,5 @@
 import { useJobStore, MachineControlState } from '../../state/jobStore';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 function Led({ on, color }: { on: boolean; color: string }) {
   return (
@@ -92,10 +93,12 @@ export function MachineBar() {
     generateCode();
   };
 
+  const mobile = useIsMobile();
+
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap',
-      padding: '0.4rem 0.75rem',
+      display: 'flex', alignItems: 'center', gap: mobile ? '0.35rem' : '0.5rem', flexWrap: 'wrap',
+      padding: mobile ? '0.3rem 0.5rem' : '0.4rem 0.75rem',
       background: '#141414',
       borderBottom: '2px solid #222',
     }}>

@@ -1,4 +1,5 @@
 import { useJobStore } from '../../state/jobStore';
+import { useIsMobile } from '../../hooks/useWindowWidth';
 
 const ACTIVE_CODES = ['G17', 'G20', 'G90', 'G94', 'G54'];
 
@@ -12,6 +13,38 @@ export function StatusStrip() {
 
   const pct = Math.round(feedOverride * 100);
   const effectiveFeed = (job.cut.feedRate * feedOverride).toFixed(0);
+  const mobile = useIsMobile();
+
+  // On mobile show a condensed single-row strip
+  if (mobile) {
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap',
+        padding: '0.3rem 0.5rem', background: '#0e0e0e',
+        borderTop: '1px solid #222', fontSize: '0.7rem',
+        fontFamily: 'Consolas, monospace',
+      }}>
+        <span style={{ color: '#555' }}>OVR:</span>
+        <input type="range" min={10} max={200} step={5} value={pct}
+          onChange={(e) => setFeedOverride(parseInt(e.target.value) / 100)}
+          style={{ width: '70px', accentColor: '#4a9eff' }} />
+        <span style={{ color: '#ffcc00' }}>{pct}%</span>
+        <span style={{ color: '#333' }}>|</span>
+        {([1, 5, 10] as (1|5|10)[]).map((s) => (
+          <button key={s} onClick={() => setAnimSpeed(s)} style={{
+            background: animSpeed === s ? '#1a3a1a' : '#111',
+            border: `1px solid ${animSpeed === s ? '#4a9eff' : '#2a2a2a'}`,
+            color: animSpeed === s ? '#4a9eff' : '#444',
+            padding: '0 0.35rem', borderRadius: '2px', cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: '0.68rem', minHeight: '24px',
+          }}>{s}×</button>
+        ))}
+        <span style={{ marginLeft: 'auto',
+          color: animState === 'playing' ? '#00ff00' : animState === 'paused' ? '#ffaa00' : '#444',
+        }}>{animState.toUpperCase()}</span>
+      </div>
+    );
+  }
 
   return (
     <div style={{
