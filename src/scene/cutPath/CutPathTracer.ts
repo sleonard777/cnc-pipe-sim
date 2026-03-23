@@ -57,8 +57,8 @@ export class CutPathTracer {
     this.indexToPlasmaCount = new Array(points.length).fill(0);
     let plasmaCount = 0;
 
-    const isSquare = pipeShape === 'square' || pipeShape === 'rectangular';
-    const halfH = pipeHalfH ?? radius;   // half-height for square/rect (halfW = radius)
+    const isSquare = pipeShape === 'square' || pipeShape === 'rectangular' || pipeShape === 'channel';
+    const halfH = pipeHalfH ?? radius;   // half-height for square/rect/channel (halfW = radius)
 
     for (let i = 0; i < points.length; i++) {
       const p = points[i];

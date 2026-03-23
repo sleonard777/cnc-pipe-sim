@@ -8,9 +8,10 @@ export const machineConfigSchema = z.object({
 });
 
 export const pipeSpecSchema = z.object({
-  shape: z.enum(['round', 'square', 'rectangular']),
+  shape: z.enum(['round', 'square', 'rectangular', 'channel']),
   od: z.number().min(1).max(10),
   height: z.number().min(1).max(10).optional(),
+  flangeWidth: z.number().min(0.5).max(8).optional(),
   wallThickness: z.number().min(0.05).max(2),
   length: z.number().min(1),
   material: z.string().min(1),

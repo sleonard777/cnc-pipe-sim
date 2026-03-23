@@ -87,23 +87,34 @@ export function PipeDimensionsSection() {
       </h4>
 
       <SelectField label="Shape" value={pipe.shape}
-        onChange={(v) => updatePipe({ shape: v as 'round' | 'square' | 'rectangular' })}
+        onChange={(v) => updatePipe({ shape: v as 'round' | 'square' | 'rectangular' | 'channel' })}
         options={[
-          { value: 'round', label: 'Round Pipe' },
-          { value: 'square', label: 'Square HSS' },
+          { value: 'round',       label: 'Round Pipe' },
+          { value: 'square',      label: 'Square HSS' },
           { value: 'rectangular', label: 'Rectangular HSS' },
+          { value: 'channel',     label: 'C-Channel' },
         ]}
       />
 
       <NumericField
-        label={pipe.shape === 'round' ? 'Outer Diameter (OD)' : 'Width'}
-        value={pipe.od} unit="in" min={1} max={10} step={0.0625}
+        label={pipe.shape === 'channel' ? 'Web Height' : pipe.shape === 'round' ? 'Outer Diameter (OD)' : 'Width'}
+        value={pipe.od} unit="in"
+        min={pipe.shape === 'channel' ? 2 : 1} max={pipe.shape === 'channel' ? 8 : 10} step={0.0625}
         onChange={(v) => updatePipe({ od: v })}
       />
 
       {pipe.shape === 'rectangular' && (
         <NumericField label="Height" value={pipe.height ?? pipe.od} unit="in" min={1} max={10} step={0.0625}
           onChange={(v) => updatePipe({ height: v })} />
+      )}
+
+      {pipe.shape === 'channel' && (
+        <NumericField
+          label="Flange Width"
+          value={pipe.flangeWidth ?? Math.max(1, Math.round(pipe.od * 0.5 * 8) / 8)}
+          unit="in" min={0.5} max={8} step={0.0625}
+          onChange={(v) => updatePipe({ flangeWidth: v })}
+        />
       )}
 
       <NumericField label="Wall Thickness" value={pipe.wallThickness} unit="in" min={0.05} max={2} step={0.001}

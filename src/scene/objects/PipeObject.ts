@@ -95,6 +95,31 @@ export function createPipeObject(pipe: PipeSpec): THREE.Group {
     wire.position.x = halfLen;
     group.add(wire);
 
+  } else if (pipe.shape === 'channel') {
+    // Structural C-channel: web (back) + top flange + bottom flange
+    const webH  = pipe.od;   // web height (nominal size)
+    const fw    = pipe.flangeWidth ?? Math.max(1, Math.round(webH * 0.5 * 8) / 8);
+    const wt    = Math.min(pipe.wallThickness, Math.min(webH, fw) * 0.45);
+
+    const addPart = (sx: number, sy: number, sz: number, px: number, py: number, pz: number) => {
+      const geo = new THREE.BoxGeometry(sx, sy, sz);
+      const mesh = new THREE.Mesh(geo, pipeMat);
+      mesh.position.set(px, py, pz);
+      mesh.castShadow = true;
+      group.add(mesh);
+      const edges = new THREE.EdgesGeometry(geo);
+      const wire  = new THREE.LineSegments(edges, wireMat);
+      wire.position.set(px, py, pz);
+      group.add(wire);
+    };
+
+    // Web: full height, wall thickness, centered at back of channel bounding box
+    addPart(pipe.length, webH, wt,  halfLen, 0,              -(fw - wt) / 2);
+    // Top flange
+    addPart(pipe.length, wt,  fw,   halfLen, (webH - wt) / 2, 0);
+    // Bottom flange
+    addPart(pipe.length, wt,  fw,   halfLen, -(webH - wt) / 2, 0);
+
   } else {
     // Rectangular tube
     const h = pipe.height ?? pipe.od;

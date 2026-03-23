@@ -160,7 +160,13 @@ export class SceneManager {
     let surfaceRadius = radius;
     if (job.pipe.shape === 'square' || job.pipe.shape === 'rectangular') {
       const halfH = job.pipe.shape === 'rectangular' ? (job.pipe.height ?? job.pipe.od) / 2 : radius;
-      const halfW = radius; // od/2 (width)
+      const halfW = radius;
+      const bRad2 = toRad(s.b);
+      const norm = Math.max(Math.abs(Math.cos(bRad2)) / halfH, Math.abs(Math.sin(bRad2)) / halfW);
+      if (norm > 0) surfaceRadius = 1 / norm;
+    } else if (job.pipe.shape === 'channel') {
+      const halfH = radius; // od/2 = web half-height
+      const halfW = (job.pipe.flangeWidth ?? Math.max(1, job.pipe.od * 0.5)) / 2;
       const bRad2 = toRad(s.b);
       const norm = Math.max(Math.abs(Math.cos(bRad2)) / halfH, Math.abs(Math.sin(bRad2)) / halfW);
       if (norm > 0) surfaceRadius = 1 / norm;
@@ -246,10 +252,12 @@ export class SceneManager {
     if (!this.fallingPiece) return;
 
     const job = this.currentJob!;
-    // Half-height of pipe cross-section (radius for round/square, halfH for rect)
+    // Half-height of the cross-section bounding box (for landing on table)
     const halfSize = (job.pipe.shape === 'rectangular'
       ? (job.pipe.height ?? job.pipe.od)
-      : job.pipe.od) / 2;
+      : job.pipe.shape === 'channel'
+        ? Math.max(job.pipe.od, job.pipe.flangeWidth ?? job.pipe.od * 0.5)
+        : job.pipe.od) / 2;
     const TABLE_Y  = -6;              // table surface world-Y (matches MachineFrame TABLE_DROP)
     const landingY = TABLE_Y + halfSize;
 
@@ -378,22 +386,33 @@ export class SceneManager {
     const points = buildPathPoints(job);
     this.pathPointCount = points.length;
     this.cutTracer.reset();
+    // For channel: CutPathTracer uses flangeWidth/2 as halfW, od/2 as halfH
+    const channelFW = job.pipe.shape === 'channel'
+      ? (job.pipe.flangeWidth ?? Math.max(1, job.pipe.od * 0.5)) : 0;
+    const tracerRadius = job.pipe.shape === 'channel' ? channelFW / 2 : radius;
+    const tracerHalfH  = job.pipe.shape === 'channel' ? radius
+      : job.pipe.shape === 'rectangular' ? (job.pipe.height ?? job.pipe.od) / 2
+      : undefined;
     this.cutTracer.initPath(
-      points, radius, Math.max(0.09, job.machine.kerfWidth * 0.8),
-      job.pipe.shape, job.pipe.shape === 'rectangular' ? (job.pipe.height ?? job.pipe.od) / 2 : undefined,
+      points, tracerRadius, Math.max(0.09, job.machine.kerfWidth * 0.8),
+      job.pipe.shape, tracerHalfH,
     );
 
     this.animController.load(points, job.cut.feedRate, radius);
     this.animController.setSpeed(this.animationSpeed);
 
     // ── Torch mount: group origin = torch tip; Y = pipe surface + pierce height; Z = 0 ─
-    // For square/rectangular pipe, initial B=bRotation determines surface distance.
     let initSurfaceRadius = radius;
     if (job.pipe.shape === 'square' || job.pipe.shape === 'rectangular') {
       const halfH = job.pipe.shape === 'rectangular' ? (job.pipe.height ?? job.pipe.od) / 2 : radius;
       const halfW = radius;
       const bRad0 = toRad(job.cut.bRotation);
       const norm0 = Math.max(Math.abs(Math.cos(bRad0)) / halfH, Math.abs(Math.sin(bRad0)) / halfW);
+      if (norm0 > 0) initSurfaceRadius = 1 / norm0;
+    } else if (job.pipe.shape === 'channel') {
+      const halfW = channelFW / 2;
+      const bRad0 = toRad(job.cut.bRotation);
+      const norm0 = Math.max(Math.abs(Math.cos(bRad0)) / radius, Math.abs(Math.sin(bRad0)) / halfW);
       if (norm0 > 0) initSurfaceRadius = 1 / norm0;
     }
     this.torchMount.position.set(

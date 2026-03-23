@@ -117,7 +117,7 @@ function buildBevelPath(job: JobState): PathPoint[] {
 
 // ── Hole / Slot dispatcher ────────────────────────────────────────────────────
 function buildHoleSlotPath(job: JobState, rMain: number): PathPoint[] {
-  const isFlat = job.pipe.shape === 'square' || job.pipe.shape === 'rectangular';
+  const isFlat = job.pipe.shape === 'square' || job.pipe.shape === 'rectangular' || job.pipe.shape === 'channel';
   return isFlat ? buildHoleSlotFlat(job) : buildHoleSlotRound(job, rMain);
 }
 
